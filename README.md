@@ -91,6 +91,33 @@ Projekt pokazuje implementację systemu monitoringu uprawnień i dostępu zgodni
   -w /boot/grub2/grub.cfg -p wa -k grub_config_changes
   ```
 
+### **8. Dodatkowe reguły monitorowania**
+- **Monitorowanie działań na systemowych binariach:**
+  Rejestracja uruchamiania ważnych binarów, takich jak `passwd`, `useradd`, `usermod`, aby śledzić zmiany dotyczące użytkowników:
+  ```bash
+  -w /usr/bin/passwd -p x -k passwd_exec
+  -w /usr/sbin/useradd -p x -k useradd_exec
+  -w /usr/sbin/usermod -p x -k usermod_exec
+  ```
+
+- **Monitorowanie modyfikacji kluczowych bibliotek systemowych:**
+  ```bash
+  -w /lib/ -p wa -k lib_changes
+  -w /lib64/ -p wa -k lib64_changes
+  ```
+
+- **Monitorowanie zmian w konfiguracji sieci:**
+  ```bash
+  -w /etc/hosts -p wa -k hosts_changes
+  -w /etc/hostname -p wa -k hostname_changes
+  ```
+
+- **Monitorowanie uruchamiania procesów systemowych:**
+  ```bash
+  -a always,exit -F arch=b64 -S fork -k process_creation
+  -a always,exit -F arch=b64 -S clone -k process_cloning
+  ```
+
 ---
 
 ## **Skrypty wspierające**
@@ -112,6 +139,50 @@ grep "logins" /var/log/audit/audit.log > $REPORT_DIR/logins_$DATE.log
 
 echo "Raporty zostały zapisane w $REPORT_DIR"
 ```
+
+---
+
+## **Testowanie zasad**
+
+Do przetestowania wdrożonych zasad i reguł, przygotowano zestaw skryptów generujących zdarzenia oraz tworzenie raportów:
+
+### **1. Skrypt generujący zdarzenia: `generate_audit_events.sh`**
+Skrypt wykonuje operacje generujące zdarzenia w systemie, takie jak:
+- Tworzenie/używanie użytkowników i grup (np. `useradd`, `usermod`).
+- Edycja plików tymczasowych w katalogach `/tmp` i `/var/tmp`.
+- Symulacja edycji krytycznych plików poprzez tworzenie ich kopii w `/tmp`.
+- Uruchamianie poleceń wymagających uprawnień administratora.
+
+Przykładowe uruchomienie:
+```bash
+./generate_audit_events.sh
+```
+
+### **2. Skrypty raportujące**
+Po wygenerowaniu zdarzeń uruchom jeden z poniższych skryptów, aby sprawdzić, jakie zdarzenia zostały zarejestrowane przez `auditd`:
+
+- **Raport z monitorowania zmian w uprawnieniach użytkowników:**
+  ```bash
+  ./monitor_user_permissions.sh
+  ```
+
+- **Raport z monitorowania działań administracyjnych:**
+  ```bash
+  ./monitor_admin_actions.sh
+  ```
+
+- **Raport z monitorowania katalogów tymczasowych:**
+  ```bash
+  ./monitor_tmp_access.sh
+  ```
+
+- **Raport z monitorowania uruchamianych poleceń:**
+  ```bash
+  ./monitor_command_exec.sh
+  ```
+
+### **3. Wyniki**
+Raporty są zapisywane w katalogu `/var/reports` w plikach o nazwach zawierających datę i godzinę ich wygenerowania. Każdy raport zawiera przejrzysty wynik analizowanych logów.
 
 ---
 

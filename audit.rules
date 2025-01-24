@@ -23,3 +23,19 @@
 
 
 -w /boot/grub2/grub.cfg -p wa -k grub_config_changes
+
+-w /usr/bin/passwd -p x -k passwd_exec
+-w /usr/sbin/useradd -p x -k useradd_exec
+-w /usr/sbin/usermod -p x -k usermod_exec
+
+
+-w /lib/ -p wa -k lib_changes
+-w /lib64/ -p wa -k lib64_changes
+
+
+-w /etc/hosts -p wa -k hosts_changes
+-w /etc/hostname -p wa -k hostname_changes
+
+
+-a always,exit -F arch=b64 -S fork -k process_creation
+-a always,exit -F arch=b64 -S clone -k process_cloning
