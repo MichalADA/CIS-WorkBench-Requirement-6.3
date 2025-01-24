@@ -1,0 +1,25 @@
+-w /etc/passwd -p wa -k passwd_changes
+-w /etc/shadow -p wa -k shadow_changes
+-w /etc/group -p wa -k group_changes
+-w /etc/gshadow -p wa -k gshadow_changes
+
+
+-w /var/log/wtmp -p wa -k logins
+-w /var/log/btmp -p wa -k failed_logins
+-w /var/log/lastlog -p wa -k lastlog_changes
+
+
+-w /etc/sudoers -p wa -k sudoers_changes
+-w /etc/sudoers.d/ -p wa -k sudoers_d_changes
+-a always,exit -F arch=b64 -S execve -C uid!=euid -F euid=0 -k sudo_exec
+
+
+-w /tmp/ -p rwxa -k tmp_access
+-w /var/tmp/ -p rwxa -k var_tmp_access
+
+
+
+-a always,exit -F arch=b64 -S execve -k command_exec
+
+
+-w /boot/grub2/grub.cfg -p wa -k grub_config_changes
